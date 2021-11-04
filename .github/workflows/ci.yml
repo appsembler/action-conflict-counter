@@ -1,0 +1,15 @@
+on: [pull_request]
+name: 'Simulate: Count merge conflicts'
+
+jobs:
+  report_via_comment:
+    # TODO: Change to `main`
+    uses: appsembler/action-conflict-counter/.github/workflows/report-via-comment.yml@main
+    with:
+      local_base_branch: 'main'
+      upstream_repo: 'https://github.com/edx/edx-platform.git'
+      upstream_branch: 'master'
+      current_git_repo: 'https://github.com/appsembler/edx-platform.git'
+      current_git_branch: 'hawthorn/main'
+    secrets:
+      github_token: ${{ secrets.GITHUB_TOKEN }}

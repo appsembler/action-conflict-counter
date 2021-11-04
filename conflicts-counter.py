@@ -116,7 +116,7 @@ class ConflictCounter:
             return 0
         else:
             count = check_output([
-                'bash', '-c', 'grep "^=======$" -- $(git ls-files --unmerged | cut -f2) | wc -l'
+                'bash', '-c', 'grep "^=======$" -- $(git ls-files --unmerged | cut -f2 | sort --unique) | wc -l'
             ])
             count = int(count.strip())
         return count
@@ -125,7 +125,7 @@ class ConflictCounter:
         if self.merge_successful:
             files = []
         else:
-            files = check_output(['bash', '-c', 'git ls-files --unmerged | cut -f2 | sort -u'])
+            files = check_output(['bash', '-c', 'git ls-files --unmerged | cut -f2 | sort --unique'])
             files = files.strip().split('\n')
         return files
 

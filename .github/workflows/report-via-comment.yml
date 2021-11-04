@@ -35,7 +35,6 @@ jobs:
     steps:
       - name: Merge Conflict counter
         id: conflicts_counter
-        # TODO: Change to `main`
         uses: appsembler/action-conflict-counter@main
         with:
           local_base_branch: ${{ inputs.local_base_branch }}

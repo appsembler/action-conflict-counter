@@ -1,0 +1,60 @@
+name: 'Report conflicts via pull request comment.'
+
+on:
+  workflow_call:
+    inputs:
+      local_base_branch:
+        type: string
+        description: 'Will be used to calculates the new conflicts the pull request / branch introduces.'
+        required: true
+        default: 'main'
+      upstream_repo:
+        type: string
+        description: 'Upstream repository to count conflicts against.'
+        required: true
+      upstream_branch:
+        type: string
+        description: 'Upstream repo branch to calculate conflicts against.'
+        required: true
+        default: 'main'
+      current_git_repo:
+        type: string
+        description: 'Override the github repo for advanced usage.'
+        required: false
+      current_git_branch:
+        type: string
+        description: 'Override the github branch for advanced usage.'
+        required: false
+    secrets:
+      github_token:
+        required: true
+
+jobs:
+  merge_conflict_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge Conflict counter
+        id: conflicts_counter
+        # TODO: Change to `main`
+        uses: appsembler/action-conflict-counter@main
+        with:
+          local_base_branch: ${{ inputs.local_base_branch }}
+          upstream_repo: ${{ inputs.upstream_repo }}
+          upstream_branch: ${{ inputs.upstream_branch }}
+          current_git_repo: ${{ inputs.current_git_repo }}
+          current_git_branch: ${{ inputs.current_git_branch }}
+      - name: Post comment
+        uses: actions/github-script@v5
+        if: github.event_name == 'pull_request'
+        env:
+          CONFLICTS_COUNTER_REPORT: ${{ steps.conflicts_counter.outputs.conflicts_report_json }}
+        with:
+          github-token: ${{ secrets.github_token }}
+          script: |
+            const conflictsReport = JSON.parse(process.env.CONFLICTS_COUNTER_REPORT);
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: conflictsReport.message
+            })

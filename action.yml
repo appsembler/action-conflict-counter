@@ -1,0 +1,29 @@
+name: 'Merge Conflict Counter'
+description: 'Check if there are any unresolved merge conflicts'
+
+branding:
+  icon: 'git-merge'
+  color: 'gray-dark'
+
+inputs:
+  local_base_branch:
+    description: 'Will be used to calculate the new conflicts the pull request / branch introduces.'
+    required: true
+    default: 'main'
+  upstream_repo:
+    description: 'Upstream repository to count conflicts against.'
+    required: true
+  upstream_branch:
+    description: 'Upstream repo branch to calculate conflicts against.'
+    required: true
+    default: 'main'
+  current_git_branch:
+    description: 'Override the github branch for advanced usage.'
+    required: false
+  current_git_repo:
+    description: 'Override the github repo for advanced usage.'
+    required: false
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

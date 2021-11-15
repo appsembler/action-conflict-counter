@@ -36,16 +36,16 @@ class ConflictReporter:
         self.init_git()
 
     def init_git(self):
-        check_output(['git', 'clone', '--no-progress', '--no-tags', '--branch', self.local_base_branch,
+        check_output(['git', 'clone', '--quiet', '--no-tags', '--branch', self.local_base_branch,
                       self.current_git_repo, REPO_PATH], cwd='/')
 
         check_output(['git', 'config', 'user.name', 'GitHub Actions Counter'])
         check_output(['git', 'config', 'user.email', 'dummy@example.com'])
         check_output(['git', 'remote', 'add', 'upstream', self.upstream_repo])
 
-        check_output(['git', 'fetch', 'upstream', f'{self.upstream_branch}:upstream_branch'])
-        check_output(['git', 'fetch', 'origin', f'{self.local_base_branch}:local_base_branch'])
-        check_output(['git', 'fetch', 'origin', f'{self.current_git_branch}:current_git_branch'])
+        check_output(['git', 'fetch', '--no-tags', 'upstream', f'{self.upstream_branch}:upstream_branch'])
+        check_output(['git', 'fetch', '--no-tags', 'origin', f'{self.local_base_branch}:local_base_branch'])
+        check_output(['git', 'fetch', '--no-tags', 'origin', f'{self.current_git_branch}:current_git_branch'])
 
     def report_conflicts(self):
         base_counter = ConflictCounter('local_base_branch', 'upstream_branch', self.exclude_paths)
@@ -126,7 +126,7 @@ class ConflictCounter:
                 # This command won't fail, even if there's an error. Until there's a better way,
                 # that's the quickest method to avoid counting noisy files.
                 _checkout_status = check_output([
-                    'bash', '-c', f'git checkout f{self.from_branch} -- {self.exclude_paths} || true',
+                    'bash', '-c', f'git checkout {self.from_branch} -- {self.exclude_paths} || true',
                 ])
 
     def count_conflicts(self):

@@ -8,7 +8,11 @@ REPO_PATH = '/repo'
 
 
 def check_output(args, cwd=REPO_PATH, **kwargs):
-    return subprocess.check_output(args, cwd=cwd, **kwargs).decode('utf-8')
+    print('$', ' '.join(args), f'at "{cwd}"')
+    output = subprocess.check_output(args, cwd=cwd, **kwargs, stderr=subprocess.STDOUT).decode('utf-8')
+    print(output)
+    print('\n')
+    return output
 
 
 class ConflictReporter:
@@ -27,13 +31,14 @@ class ConflictReporter:
         current_git_repo = f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}.git'
         self.current_git_repo = os.getenv('INPUT_CURRENT_GIT_REPO') or current_git_repo
 
-        self.exclude_paths = os.getenv('INPUT_EXCLUDE_PATHS', '')  # Optional
+        self.exclude_paths = os.getenv('INPUT_EXCLUDE_PATHS')  # Optional
 
         self.init_git()
 
     def init_git(self):
-        subprocess.check_output(['git', 'clone', '--no-tags', self.current_git_repo,
-                                 '--branch', self.local_base_branch, '--no-progress', REPO_PATH])
+        os.mkdir(REPO_PATH)
+        check_output(['git', 'clone', '--no-progress', '--no-tags', '--branch', self.local_base_branch,
+                      self.current_git_repo, REPO_PATH], cwd='/')
 
         check_output(['git', 'config', 'user.name', 'GitHub Actions Counter'])
         check_output(['git', 'config', 'user.email', 'dummy@example.com'])
@@ -111,7 +116,6 @@ class ConflictCounter:
             self.merge_successful = True
         except subprocess.CalledProcessError:
             status = check_output(['git', 'status'])
-            check_output(['git', 'status'])
             if 'fix conflicts and run "git commit"' in status:
                 self.merge_successful = False
             else:

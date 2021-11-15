@@ -6,9 +6,15 @@ import subprocess
 
 REPO_PATH = '/repo'
 
+PATHS_LIST_SEPARATOR = ','
+
 
 def check_output(args, cwd=REPO_PATH, **kwargs):
-    return subprocess.check_output(args, cwd=cwd, **kwargs).decode('utf-8')
+    print('$', ' '.join(args), f'at "{cwd}"')
+    output = subprocess.check_output(args, cwd=cwd, **kwargs, stderr=subprocess.STDOUT).decode('utf-8')
+    print(output)
+    print('\n')
+    return output
 
 
 class ConflictReporter:
@@ -27,21 +33,21 @@ class ConflictReporter:
         current_git_repo = f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}.git'
         self.current_git_repo = os.getenv('INPUT_CURRENT_GIT_REPO') or current_git_repo
 
-        self.exclude_paths = os.getenv('INPUT_EXCLUDE_PATHS', '')  # Optional
+        self.exclude_paths = os.getenv('INPUT_EXCLUDE_PATHS', '').split(PATHS_LIST_SEPARATOR)  # Optional argument
 
         self.init_git()
 
     def init_git(self):
-        subprocess.check_output(['git', 'clone', '--no-tags', self.current_git_repo,
-                                 '--branch', self.local_base_branch, '--no-progress', REPO_PATH])
+        check_output(['git', 'clone', '--quiet', '--no-tags', '--branch', self.local_base_branch,
+                      self.current_git_repo, REPO_PATH], cwd='/')
 
         check_output(['git', 'config', 'user.name', 'GitHub Actions Counter'])
         check_output(['git', 'config', 'user.email', 'dummy@example.com'])
         check_output(['git', 'remote', 'add', 'upstream', self.upstream_repo])
 
-        check_output(['git', 'fetch', 'upstream', f'{self.upstream_branch}:upstream_branch'])
-        check_output(['git', 'fetch', 'origin', f'{self.local_base_branch}:local_base_branch'])
-        check_output(['git', 'fetch', 'origin', f'{self.current_git_branch}:current_git_branch'])
+        check_output(['git', 'fetch', '--no-tags', 'upstream', f'{self.upstream_branch}:upstream_branch'])
+        check_output(['git', 'fetch', '--no-tags', 'origin', f'{self.local_base_branch}:local_base_branch'])
+        check_output(['git', 'fetch', '--no-tags', 'origin', f'{self.current_git_branch}:current_git_branch'])
 
     def report_conflicts(self):
         base_counter = ConflictCounter('local_base_branch', 'upstream_branch', self.exclude_paths)
@@ -111,7 +117,6 @@ class ConflictCounter:
             self.merge_successful = True
         except subprocess.CalledProcessError:
             status = check_output(['git', 'status'])
-            check_output(['git', 'status'])
             if 'fix conflicts and run "git commit"' in status:
                 self.merge_successful = False
             else:
@@ -120,11 +125,15 @@ class ConflictCounter:
 
         if not self.merge_successful:  # No need to run on successful merge.
             if self.exclude_paths:
-                # This command won't fail, even if there's an error. Until there's a better way,
-                # that's the quickest method to avoid counting noisy files.
-                _checkout_status = check_output([
-                    'bash', '-c', f'git checkout f{self.from_branch} -- {self.exclude_paths} || true',
-                ])
+                print('Started excluding paths:', ','.join(self.exclude_paths))
+                for path in self.exclude_paths:
+                    try:
+                        check_output(['git', 'checkout', self.from_branch, '--', path])
+                    except subprocess.CalledProcessError as error:
+                        # Continue even if there's an error. Until there's a better way,
+                        # that's an acceptable method to avoid counting noisy files.
+                        print('Error in ignoring path:', f'"{path}".', 'Error message:', error)
+                print('Finished excluding paths.')
 
     def count_conflicts(self):
         if self.merge_successful:

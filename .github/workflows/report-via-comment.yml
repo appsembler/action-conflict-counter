@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Merge Conflict counter
         id: conflicts_counter
-        uses: appsembler/action-conflict-counter@main
+        uses: appsembler/action-conflict-counter@test1
         with:
           local_base_branch: ${{ inputs.local_base_branch }}
           upstream_repo: ${{ inputs.upstream_repo }}

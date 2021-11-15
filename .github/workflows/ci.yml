@@ -3,7 +3,7 @@ name: 'Simulate: Count merge conflicts'
 
 jobs:
   report_via_comment:
-    uses: appsembler/action-conflict-counter/.github/workflows/report-via-comment.yml@main
+    uses: appsembler/action-conflict-counter/.github/workflows/report-via-comment.yml@test1
     with:
       local_base_branch: 'main'
       upstream_repo: 'https://github.com/edx/edx-platform.git'

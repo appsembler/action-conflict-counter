@@ -36,7 +36,6 @@ class ConflictReporter:
         self.init_git()
 
     def init_git(self):
-        os.mkdir(REPO_PATH)
         check_output(['git', 'clone', '--no-progress', '--no-tags', '--branch', self.local_base_branch,
                       self.current_git_repo, REPO_PATH], cwd='/')
 

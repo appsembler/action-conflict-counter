@@ -6,6 +6,8 @@ import subprocess
 
 REPO_PATH = '/repo'
 
+PATHS_LIST_SEPARATOR = ','
+
 
 def check_output(args, cwd=REPO_PATH, **kwargs):
     print('$', ' '.join(args), f'at "{cwd}"')
@@ -31,7 +33,7 @@ class ConflictReporter:
         current_git_repo = f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}.git'
         self.current_git_repo = os.getenv('INPUT_CURRENT_GIT_REPO') or current_git_repo
 
-        self.exclude_paths = os.getenv('INPUT_EXCLUDE_PATHS')  # Optional
+        self.exclude_paths = os.getenv('INPUT_EXCLUDE_PATHS', '').split(PATHS_LIST_SEPARATOR)  # Optional argument
 
         self.init_git()
 
@@ -123,11 +125,15 @@ class ConflictCounter:
 
         if not self.merge_successful:  # No need to run on successful merge.
             if self.exclude_paths:
-                # This command won't fail, even if there's an error. Until there's a better way,
-                # that's the quickest method to avoid counting noisy files.
-                _checkout_status = check_output([
-                    'bash', '-c', f'git checkout {self.from_branch} -- {self.exclude_paths} || true',
-                ])
+                print('Started excluding paths:', ','.join(self.exclude_paths))
+                for path in self.exclude_paths:
+                    try:
+                        check_output(['git', 'checkout', self.from_branch, '--', path])
+                    except subprocess.CalledProcessError as error:
+                        # Continue even if there's an error. Until there's a better way,
+                        # that's an acceptable method to avoid counting noisy files.
+                        print('Error in ignoring path:', f'"{path}".', 'Error message:', error)
+                print('Finished excluding paths.')
 
     def count_conflicts(self):
         if self.merge_successful:

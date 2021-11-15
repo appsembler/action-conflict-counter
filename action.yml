@@ -24,7 +24,7 @@ inputs:
     description: 'Override the github repo for advanced usage.'
     required: false
   exclude_paths:
-    description: 'Paths to exclude from counting the conflicts.'
+    description: 'Comma separated list of paths to exclude from counting the conflicts.'
     required: false
     default: ''
 

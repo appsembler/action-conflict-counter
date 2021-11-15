@@ -10,6 +10,6 @@ jobs:
       upstream_branch: 'master'
       current_git_repo: 'https://github.com/appsembler/edx-platform.git'
       current_git_branch: 'hawthorn/main'
-      exclude_paths: 'cms/static/js/ conf/locale/ lms/static/js/ package.json'
+      exclude_paths: 'cms/static/js/,conf/locale/,lms/static/js/,package.json'
     secrets:
       github_token: ${{ secrets.GITHUB_TOKEN }}

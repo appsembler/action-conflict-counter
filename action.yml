@@ -23,6 +23,10 @@ inputs:
   current_git_repo:
     description: 'Override the github repo for advanced usage.'
     required: false
+  exclude_paths:
+    description: 'Paths to exclude from counting the conflicts.'
+    required: false
+    default: ''
 
 runs:
   using: 'docker'

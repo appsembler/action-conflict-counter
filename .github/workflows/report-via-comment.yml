@@ -25,6 +25,11 @@ on:
         type: string
         description: 'Override the github branch for advanced usage.'
         required: false
+      exclude_paths:
+        type: string
+        default: ''
+        description: 'Paths to exclude from counting the conflicts.'
+        required: false
     secrets:
       github_token:
         required: true
@@ -42,6 +47,7 @@ jobs:
           upstream_branch: ${{ inputs.upstream_branch }}
           current_git_repo: ${{ inputs.current_git_repo }}
           current_git_branch: ${{ inputs.current_git_branch }}
+          exclude_paths: ${{ inputs.exclude_paths }}
       - name: Post comment
         uses: actions/github-script@v5
         if: github.event_name == 'pull_request'

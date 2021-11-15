@@ -1,6 +1,6 @@
 # Merge Conflict Counter
 
-This action counts any merge conflicts in your repository. Test.
+This action counts any merge conflicts in your repository.
 
 
 ## How to use it?

@@ -59,7 +59,9 @@ class ConflictReporter:
         new_conflicted_files = sorted(set(current_counter.conflicting_files()) - base_conflicted_files)
         new_conflicted_files_str = '\n'.join(new_conflicted_files)
 
+        adds_conflicts = False
         if current_conflicts > base_conflicts:
+            adds_conflicts = True
             change_message = f'Adds {current_conflicts - base_conflicts} new conflicts. How can we do better?'
         elif current_conflicts < base_conflicts:
             change_message = f'Resolves {base_conflicts - current_conflicts} existing conflicts. Amazing!'
@@ -90,6 +92,7 @@ class ConflictReporter:
             'current_conflicts': current_conflicts,
             'base_conflicts': base_conflicts,
             'new_conflicted_files': list(new_conflicted_files),
+            'adds_conflicts': adds_conflicts,
         })
 
         print(f'::set-output name=conflicts_report_json::{output_json}')

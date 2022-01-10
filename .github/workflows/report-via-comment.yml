@@ -67,3 +67,8 @@ jobs:
                 issue_number: context.issue.number,
                 body: conflictsReport.message
             })
+
+            // Mark the workflow as failed if there are added conflicts.
+            if (conflictsReport.adds_conflicts) {
+              process.exit(1);
+            }

@@ -36,6 +36,7 @@ on:
 
 jobs:
   merge_conflict_job:
+    name: report
     runs-on: ubuntu-latest
     steps:
       - name: Merge Conflict counter
@@ -57,9 +58,12 @@ jobs:
           github-token: ${{ secrets.custom_github_token }}
           script: |
             const conflictsReport = JSON.parse(process.env.CONFLICTS_COUNTER_REPORT);
+            const { owner, repo } = context.repo;
+
+            // TODO: Hide or delete previous comments to reduce noise.
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: conflictsReport.message
+                owner,
+                repo,
+                issue_number: context.issue.number,
+                body: conflictsReport.message
             })

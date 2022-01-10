@@ -20,7 +20,7 @@ jobs:
       upstream_repo: 'https://github.com/edx/edx-platform.git'  # Upstream repository that you've forked from
       upstream_branch: 'master'  # Upstream repository's main/master branch name
     secrets:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
+      custom_github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 

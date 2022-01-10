@@ -12,4 +12,4 @@ jobs:
       current_git_branch: 'hawthorn/main'
       exclude_paths: 'cms/static/js/,conf/locale/,lms/static/js/,package.json'
     secrets:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
+      custom_github_token: ${{ secrets.GITHUB_TOKEN }}

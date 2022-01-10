@@ -1,8 +1,8 @@
 on: [pull_request]
-name: 'Simulate: Count merge conflicts'
+name: 'Simulate: Hawthorn'
 
 jobs:
-  report_via_comment:
+  conflicts:
     uses: appsembler/action-conflict-counter/.github/workflows/report-via-comment.yml@main
     with:
       local_base_branch: 'main'

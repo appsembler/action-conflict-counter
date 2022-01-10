@@ -63,3 +63,8 @@ jobs:
               repo: context.repo.repo,
               body: conflictsReport.message
             })
+
+            // Mark the workflow as failed if there are added conflicts.
+            if (conflictsReport.adds_conflicts) {
+              process.exit(1);
+            }

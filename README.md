@@ -14,11 +14,11 @@ name: 'Merge conflicts'
 jobs:
   report:
     name: 'Report'
-    uses: appsembler/action-conflict-counter/.github/workflows/report-via-comment.yml@main
+    uses: appsembler/action-conflict-counter/.github/workflows/report-via-comment.yml
     with:
       local_base_branch: 'main'  # Your repositories main/master branch name
       upstream_repo: 'https://github.com/edx/edx-platform.git'  # Upstream repository that you've forked from
-      upstream_branch: 'master'  # Upstream repository's main/master branch name
+      upstream_branches: 'master,open-release/maple.master'  # Upstream repository's main/master branch name
     secrets:
       custom_github_token: ${{ secrets.GITHUB_TOKEN }}
 ```

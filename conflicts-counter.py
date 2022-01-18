@@ -25,7 +25,7 @@ class ConflictReporter:
     def __init__(self):
         self.local_base_branch = os.environ['INPUT_LOCAL_BASE_BRANCH']
         self.upstream_repo = os.environ['INPUT_UPSTREAM_REPO']
-        self.upstream_branch = os.environ['INPUT_UPSTREAM_BRANCH']
+        self.upstream_branches = os.environ['INPUT_UPSTREAM_BRANCHES']
 
         current_git_branch = os.environ['GITHUB_REF']
         self.current_git_branch = os.getenv('INPUT_CURRENT_GIT_BRANCH') or current_git_branch
@@ -45,53 +45,63 @@ class ConflictReporter:
         check_output(['git', 'config', 'user.email', 'dummy@example.com'])
         check_output(['git', 'remote', 'add', 'upstream', self.upstream_repo])
 
-        check_output(['git', 'fetch', '--no-tags', 'upstream', f'{self.upstream_branch}:upstream_branch'])
         check_output(['git', 'fetch', '--no-tags', 'origin', f'{self.local_base_branch}:local_base_branch'])
         check_output(['git', 'fetch', '--no-tags', 'origin', f'{self.current_git_branch}:current_git_branch'])
 
     def report_conflicts(self):
-        base_counter = ConflictCounter('local_base_branch', 'upstream_branch', self.exclude_paths)
-        base_conflicts = base_counter.count_conflicts()
-        base_conflicted_files = set(base_counter.conflicting_files())
-
-        current_counter = ConflictCounter('current_git_branch', 'upstream_branch', self.exclude_paths)
-        current_conflicts = current_counter.count_conflicts()
-        new_conflicted_files = sorted(set(current_counter.conflicting_files()) - base_conflicted_files)
-        new_conflicted_files_str = '\n'.join(new_conflicted_files)
-
+        upstream_branches = self.upstream_branches.split(',')
         adds_conflicts = False
-        if current_conflicts > base_conflicts:
-            adds_conflicts = True
-            change_message = f'Adds {current_conflicts - base_conflicts} new conflicts. How can we do better?'
-        elif current_conflicts < base_conflicts:
-            change_message = f'Resolves {base_conflicts - current_conflicts} existing conflicts. Amazing!'
-        else:
-            change_message = f'Good work! No added conflicts.'
 
-        report = (
-            f"Checking git merge conflicts in this branch:\n"
+        reports = []
+        report_intro = (
+            f"Checking git merge conflicts against {self.upstream_repo} \n"
             f"\n"
-            f" - **Upstream:** {self.upstream_repo} @ `{self.upstream_branch}`\n"
-            f" - **Benchmark conflicts with** `{self.local_base_branch}`: {base_conflicts}\n"
-            f" - **Current conflicts**: {current_conflicts}\n"
-            f" - **Summary**: {change_message}\n"
         )
+        reports.append(report_intro)
 
-        if new_conflicted_files:
-            report += (
-                f"\n"
-                f"<details><summary>New conflicting files</summary>\n"
-                f"\n"
-                f"```\n{new_conflicted_files_str}\n```\n"
-                f"</details>"
+        for idx, upstream_branch in enumerate(upstream_branches):
+            upstream_branch_alias = f'{upstream_branch}_{idx}'
+            check_output(['git', 'fetch', '--no-tags', 'upstream',
+                          f'{upstream_branch}:{upstream_branch_alias}'])
+
+            base_counter = ConflictCounter('local_base_branch', upstream_branch_alias, self.exclude_paths)
+            base_conflicts = base_counter.count_conflicts()
+            base_conflicted_files = set(base_counter.conflicting_files())
+
+            current_counter = ConflictCounter('current_git_branch', upstream_branch_alias, self.exclude_paths)
+            current_conflicts = current_counter.count_conflicts()
+            new_conflicted_files = sorted(set(current_counter.conflicting_files()) - base_conflicted_files)
+            new_conflicted_files_str = '\n'.join(new_conflicted_files)
+
+            if current_conflicts > base_conflicts:
+                adds_conflicts = True
+                change_message = f'Adds {current_conflicts - base_conflicts} new conflicts. How can we do better?'
+            elif current_conflicts < base_conflicts:
+                change_message = f'Resolves {base_conflicts - current_conflicts} existing conflicts. Amazing!'
+            else:
+                change_message = f'Good work! No added conflicts.'
+
+            report = (
+                f"| Comparing with  | `{upstream_branch}` |\n"
+                f"| ---  | --- |\n"
+                f"| Benchmark conflicts with `{self.local_base_branch}` | {base_conflicts} |\n"
+                f"| Current conflicts | {current_conflicts} |\n"
+                f"| Summary | {change_message} |\n"
             )
 
+            if new_conflicted_files:
+                report += (
+                    f"\n"
+                    f"<details><summary>New conflicting files with '{upstream_branch}'</summary>\n"
+                    f"\n"
+                    f"```\n{new_conflicted_files_str}\n```\n"
+                    f"</details>"
+                )
+
+            reports.append(report)
+
         output_json = json.dumps({
-            'message': report,
-            'change_message': change_message,
-            'current_conflicts': current_conflicts,
-            'base_conflicts': base_conflicts,
-            'new_conflicted_files': list(new_conflicted_files),
+            'report': '\n\n'.join(reports),
             'adds_conflicts': adds_conflicts,
         })
 

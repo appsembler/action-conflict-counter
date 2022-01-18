@@ -1,5 +1,5 @@
 on: [pull_request]
-name: 'Simulate: Hawthorn'
+name: 'Simulate: Count conflicts'
 
 jobs:
   conflicts:
@@ -7,7 +7,7 @@ jobs:
     with:
       local_base_branch: 'main'
       upstream_repo: 'https://github.com/edx/edx-platform.git'
-      upstream_branch: 'master'
+      upstream_branches: 'open-release/koa.master,master'
       current_git_repo: 'https://github.com/appsembler/edx-platform.git'
       current_git_branch: 'hawthorn/main'
       exclude_paths: 'cms/static/js/,conf/locale/,lms/static/js/,package.json'

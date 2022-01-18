@@ -13,8 +13,8 @@ inputs:
   upstream_repo:
     description: 'Upstream repository to count conflicts against.'
     required: true
-  upstream_branch:
-    description: 'Upstream repo branch to calculate conflicts against.'
+  upstream_branches:
+    description: 'Upstream repo branches (comma seperated) to calculate conflicts against.'
     required: true
     default: 'main'
   current_git_branch:

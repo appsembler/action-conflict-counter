@@ -17,6 +17,9 @@ def check_output(args, cwd=REPO_PATH, **kwargs):
     return output
 
 
+BOT_SIGNATURE = '<!--- action-conflict-counter --->'
+
+
 class ConflictReporter:
     """
     Reports count and summary of merge conflicts.
@@ -99,6 +102,7 @@ class ConflictReporter:
                 )
 
             reports.append(report)
+            reports.append(BOT_SIGNATURE)
 
         output_json = json.dumps({
             'report': '\n\n'.join(reports),

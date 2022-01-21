@@ -39,6 +39,10 @@ jobs:
     name: report
     runs-on: ubuntu-latest
     steps:
+      - name: Hide old comments
+        uses: appsembler/hide-comment-action@v1
+        with:
+          ends-with: '<!--- action-conflict-counter --->'
       - name: Merge Conflict counter
         id: conflicts_counter
         uses: appsembler/action-conflict-counter@main

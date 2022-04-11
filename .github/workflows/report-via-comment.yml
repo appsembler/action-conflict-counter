@@ -30,6 +30,11 @@ on:
         default: ''
         description: 'Comma separated list of paths to exclude from counting the conflicts.'
         required: false
+      fail_on_conflicts:
+        type: boolean
+        default: false
+        description: 'Set to true to mark the action as failed.'
+        required: false
     secrets:
       custom_github_token:
         required: true
@@ -63,6 +68,7 @@ jobs:
           script: |
             const conflictsReport = JSON.parse(process.env.CONFLICTS_COUNTER_REPORT);
             const { owner, repo } = context.repo;
+            const inputs = ${{ toJSON(inputs) }};
 
             github.rest.issues.createComment({
                 owner,
@@ -71,7 +77,7 @@ jobs:
                 body: conflictsReport.report
             }).then(() => {
                 // Mark the workflow as failed if there are added conflicts.
-                if (conflictsReport.adds_conflicts) {
+                if (conflictsReport.adds_conflicts && inputs.fail_on_conflicts) {
                   process.exit(1);
                 }              
             })
